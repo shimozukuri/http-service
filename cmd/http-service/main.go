@@ -2,6 +2,8 @@ package main
 
 import (
 	"http-service/internal/config"
+	"http-service/internal/lib/logger/sl"
+	"http-service/internal/storage/sqlite"
 	"log/slog"
 	"os"
 )
@@ -19,6 +21,14 @@ func main() {
 
 	log.Info("starting http-service", slog.String("env", cfg.Env))
 	log.Debug("debug logging enabled")
+
+	storage, err := sqlite.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("cannot create storage", sl.Err(err))
+		os.Exit(1)
+	}
+
+	_ = storage
 }
 
 func setupLogger(env string) *slog.Logger {
