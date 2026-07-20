@@ -26,7 +26,11 @@ func main() {
 
 	log := setupLogger(cfg.Env)
 
-	log.Info("starting http-service", slog.String("env", cfg.Env))
+	log.Info(
+		"starting http-service",
+		slog.String("env", cfg.Env),
+		slog.String("version", "1.0.0"),
+	)
 	log.Debug("debug logging enabled")
 
 	storage, err := sqlite.New(cfg.StoragePath)
