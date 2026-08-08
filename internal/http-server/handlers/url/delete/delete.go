@@ -8,14 +8,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 )
-
-type Request struct {
-	Alias string `json:"alias" validate:"required"`
-}
 
 type URLDeleter interface {
 	DeleteURL(alias string) error
@@ -30,32 +26,15 @@ func New(log *slog.Logger, urlDeleter URLDeleter) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		var req Request
-
-		err := render.DecodeJSON(r.Body, &req)
-		if err != nil {
-			log.Error("failed to decode request", sl.Err(err))
-
-			render.JSON(w, r, resp.Error("failed to decode request"))
+		alias := chi.URLParam(r, "alias")
+		if alias == "" {
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, resp.Error("alias is required"))
 
 			return
 		}
 
-		log.Info("request body decoded", slog.Any("request", req))
-
-		if err := validator.New().Struct(req); err != nil {
-			validateErr := err.(validator.ValidationErrors)
-
-			log.Error("invalid request", sl.Err(err))
-
-			render.JSON(w, r, resp.ValidationError(validateErr))
-
-			return
-		}
-
-		alias := req.Alias
-
-		err = urlDeleter.DeleteURL(alias)
+		err := urlDeleter.DeleteURL(alias)
 		if errors.Is(err, storage.ErrURLNotFound) {
 			log.Info("url not found", slog.String("alias", alias))
 
