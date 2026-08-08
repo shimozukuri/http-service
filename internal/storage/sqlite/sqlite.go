@@ -91,16 +91,21 @@ func (s *Storage) GetURL(alias string) (string, error) {
 func (s *Storage) DeleteURL(alias string) error {
 	const op = "storage.sqlite.DeleteURL"
 
-	stmt, err := s.db.Prepare("DELETE FROM url WHERE alias = ?")
+	result, err := s.db.Exec(
+		"DELETE FROM url WHERE alias = ?",
+		alias,
+	)
 	if err != nil {
-		return fmt.Errorf("%s: prepare statement: %w", op, err)
+		return fmt.Errorf("%s: execute query: %w", op, err)
 	}
 
-	_, err = stmt.Exec(alias)
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return storage.ErrURLNotFound
-		}
+		return fmt.Errorf("%s: rows affected: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return storage.ErrURLNotFound
 	}
 
 	return nil
