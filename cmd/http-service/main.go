@@ -2,6 +2,7 @@ package main
 
 import (
 	"http-service/internal/config"
+	"http-service/internal/http-server/handlers/redirect"
 	"http-service/internal/http-server/handlers/url/save"
 	"http-service/internal/http-server/middleware/logger"
 	"http-service/internal/lib/logger/handlers/slogpretty"
@@ -50,6 +51,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/url", save.New(log, storage))
+	router.Get("/{alias}", redirect.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
