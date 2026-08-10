@@ -15,7 +15,7 @@ import (
 	"http-service/internal/storage"
 )
 
-//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLGetter
+//go:generate go run github.com/vektra/mockery/v2@v2.53.6 --name=URLGetter
 type URLGetter interface {
 	GetURL(alias string) (string, error)
 }
@@ -33,7 +33,8 @@ func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
 		if alias == "" {
 			log.Info("alias is empty")
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, resp.Error("alias is required"))
 
 			return
 		}
@@ -42,6 +43,7 @@ func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
 		if errors.Is(err, storage.ErrURLNotFound) {
 			log.Info("url not found", "alias", alias)
 
+			render.Status(r, http.StatusNotFound)
 			render.JSON(w, r, resp.Error("not found"))
 
 			return
@@ -49,6 +51,7 @@ func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
 		if err != nil {
 			log.Error("failed to get url", sl.Err(err))
 
+			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, resp.Error("internal error"))
 
 			return

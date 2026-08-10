@@ -57,7 +57,7 @@ func main() {
 		}))
 
 		r.Post("/", save.New(log, storage))
-		r.Delete("/url/{alias}", delete.New(log, storage))
+		r.Delete("/{alias}", delete.New(log, storage))
 	})
 
 	router.Get("/{alias}", redirect.New(log, storage))
