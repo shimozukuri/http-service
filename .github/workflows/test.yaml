@@ -46,36 +46,13 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Prepare application
-        run: mkdir -p storage
+#      - name: Prepare application
+#        run: mkdir -p storage
 
       - name: Start application
         env:
           CONFIG_PATH: ./config/ci.yaml
-        run: |
-          go run ./cmd/http-service > app.log 2>&1 &
-          echo $! > app.pid
-
-      - name: Debug application
-        run: |
-          echo "=== CONFIG ==="
-          cat ./config/ci.yaml
-
-          echo ""
-          echo "=== PROCESSES ==="
-          ps aux | grep -E "go|http-service" | grep -v grep || true
-
-          echo ""
-          echo "=== LISTENING PORTS ==="
-          ss -ltnp || true
-
-          echo ""
-          echo "=== APPLICATION LOG ==="
-          cat app.log || true
-
-          echo ""
-          echo "=== CURL ==="
-          curl -v --connect-timeout 3 http://127.0.0.1:8082/health || true
+        run: go run ./cmd/http-service
 
       - name: Run functional tests
         run: go test -tags=functional -v -count=1 ./tests/...
