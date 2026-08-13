@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	host   = "localhost:8082"
+	host   = "127.0.0.1:8082"
 	scheme = "http"
 )
 
