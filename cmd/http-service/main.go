@@ -60,6 +60,9 @@ func main() {
 	})
 
 	router.Get("/{alias}", redirect.New(log, storage))
+	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
