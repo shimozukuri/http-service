@@ -46,13 +46,44 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Prepare application
-        run: mkdir -p storage
+      - name: Build application
+        run: go build -o http-service ./cmd/http-service
 
       - name: Start application
         env:
-          CONFIG_PATH: ./config/ci.yaml
-        run: go run ./cmd/http-service
+          CONFIG_PATH: ./config/prod.yaml
+        run: |
+          ./http-service > app.log 2>&1 &
+          echo $! > app.pid
+
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1:8082/health || true)
+
+            echo "Attempt $i: HTTP status = $STATUS"
+
+            if [ "$STATUS" = "200" ]; then
+              echo "Application is ready"
+              exit 0
+            fi
+
+            if ! kill -0 $(cat app.pid) 2>/dev/null; then
+              echo "Application exited unexpectedly"
+              cat app.log
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          echo "Application did not become ready"
+
+          ss -ltnp || true
+          cat app.log || true
+
+          exit 1
 
       - name: Run functional tests
         run: go test -tags=functional -v -count=1 ./tests/...
