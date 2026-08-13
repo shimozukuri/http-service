@@ -1,0 +1,77 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: go test -v -race ./...
+
+
+  functional-tests:
+    name: Functional Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Start application
+        env:
+          CONFIG_PATH: ./config/ci.yaml
+        run: |
+          go run ./cmd/http-service > app.log 2>&1 &
+          echo $! > app.pid
+
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            if curl --silent --fail http://localhost:8082/ > /dev/null; then
+              echo "Application is ready"
+              exit 0
+            fi
+
+            echo "Waiting for application..."
+            sleep 1
+          done
+
+          echo "Application failed to start"
+          cat app.log
+          exit 1
+
+      - name: Run functional tests
+        run: go test -tags=functional -v -count=1 ./tests/...
+
+      - name: Print application logs
+        if: failure()
+        run: cat app.log
