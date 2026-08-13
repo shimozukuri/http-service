@@ -49,7 +49,6 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(logger.New(log))
 	router.Use(middleware.Recoverer)
-	router.Use(middleware.URLFormat)
 
 	router.Route("/url", func(r chi.Router) {
 		r.Use(middleware.BasicAuth("http-service", map[string]string{
