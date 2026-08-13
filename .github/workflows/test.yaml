@@ -51,7 +51,7 @@ jobs:
 
       - name: Start application
         env:
-          CONFIG_PATH: ./config/prod.yaml
+          CONFIG_PATH: ./config/ci.yaml
         run: |
           ./http-service > app.log 2>&1 &
           echo $! > app.pid
