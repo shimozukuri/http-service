@@ -51,37 +51,31 @@ jobs:
 
       - name: Start application
         env:
-          CONFIG_PATH: ./config/prod.yaml
+          CONFIG_PATH: ./config/ci.yaml
         run: |
           go run ./cmd/http-service > app.log 2>&1 &
           echo $! > app.pid
 
-      - name: Wait for application
+      - name: Debug application
         run: |
-          for i in {1..30}; do
-            if ! kill -0 $(cat app.pid) 2>/dev/null; then
-              echo "Application process died"
-              echo "=== APPLICATION LOGS ==="
-              cat app.log
-              exit 1
-            fi
+          echo "=== CONFIG ==="
+          cat ./config/ci.yaml
 
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || true)
+          echo ""
+          echo "=== PROCESSES ==="
+          ps aux | grep -E "go|http-service" | grep -v grep || true
 
-            echo "Attempt $i: HTTP status = $STATUS"
+          echo ""
+          echo "=== LISTENING PORTS ==="
+          ss -ltnp || true
 
-            if [ "$STATUS" = "200" ]; then
-              echo "Application is ready"
-              exit 0
-            fi
+          echo ""
+          echo "=== APPLICATION LOG ==="
+          cat app.log || true
 
-            sleep 1
-          done
-
-          echo "Application did not become ready"
-          echo "=== APPLICATION LOGS ==="
-          cat app.log
-          exit 1
+          echo ""
+          echo "=== CURL ==="
+          curl -v --connect-timeout 3 http://127.0.0.1:8082/health || true
 
       - name: Run functional tests
         run: go test -tags=functional -v -count=1 ./tests/...
