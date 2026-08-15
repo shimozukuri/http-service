@@ -46,9 +46,6 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Prepare application
-        run: mkdir -p storage
-
       - name: Build application
         run: go build -o http-service ./cmd/http-service
 
