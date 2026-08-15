@@ -62,7 +62,7 @@ go mod download
 The application requires `CONFIG_PATH` to point to a configuration file. The repository includes `config/ci.yaml` with the settings used by the functional tests and GitHub Actions:
 
 ```yaml
-env: "ci"
+env: "dev"
 storage_path: "./storage/storage.db"
 http_server:
   address: "localhost:8082"
