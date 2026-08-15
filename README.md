@@ -95,7 +95,7 @@ Environment variables:
 | `CONFIG_PATH` | Yes | Path to the YAML configuration file. The process exits if it is unset or the file does not exist. |
 | `HTTP_SERVER_PASSWORD` | No | Overrides `http_server.password` from the configuration file. |
 
-The application currently implements logger modes for `local`, `dev`, and `prod`. Change the `env` value from `ci` to one of these modes before starting the service locally. Do not reuse or commit production credentials; supply production passwords through `HTTP_SERVER_PASSWORD` or another secret-management mechanism.
+The application currently implements logger modes for `local`, `dev`, and `prod`. Do not reuse or commit production credentials; supply production passwords through `HTTP_SERVER_PASSWORD` or another secret-management mechanism.
 
 ### Run locally
 
