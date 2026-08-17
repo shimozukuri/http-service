@@ -231,11 +231,3 @@ The `Tests` GitHub Actions workflow runs for pull requests and pushes to `master
 3. Application logs are printed if the functional job fails.
 
 The repository currently defines continuous integration only; no deployment workflow is configured.
-
-## Roadmap
-
-- Validate unsupported `env` values during configuration loading.
-- Add graceful HTTP server shutdown and explicit storage cleanup.
-- Introduce versioned database migrations and direct storage tests.
-- Add container packaging and deployment automation.
-- Consider rate limiting and stronger production credential management.
